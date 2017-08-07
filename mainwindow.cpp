@@ -7,12 +7,6 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    QImage image("/home/ieg/Resimler/images1.jpg");
-    item= new QGraphicsPixmapItem(QPixmap::fromImage(image));
-    scene= new QGraphicsScene(this);
-    ui->graphicsView->setScene(scene);
-    scene->addItem(item);
-
 
     plotGraph();
 }
