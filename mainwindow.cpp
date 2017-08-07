@@ -7,8 +7,19 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    QList<int> randState;
+    for (int var = 0; var < 250; ++var) {
+        if( (50 < var && var < 130) || (170 < var && var < 230) )
+        {
+            randState.append(1);
+        }
+        else
+        {
+            randState.append(0);
+        }
+    }
 
-    plotGraph();
+    plotGraph(randState);
 }
 
 MainWindow::~MainWindow()
@@ -16,7 +27,7 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::plotGraph()
+void MainWindow::plotGraph(QList<int> dataList)
 {
 
     // set locale to english, so we get english month names:
@@ -33,17 +44,15 @@ void MainWindow::plotGraph()
         ui->customPlot->graph()->setPen(QPen(color.lighter(200)));
         ui->customPlot->graph()->setBrush(QBrush(color));
         // generate random walk data:
-        QVector<QCPGraphData> timeData(250);
-        for (int i=0; i<250; ++i)
+        QVector<QCPGraphData> timeData(dataList.count());
+        for (int i=0; i<dataList.count(); ++i)
         {
             timeData[i].key = now + 24*3600*i;
             if (i == 0)
                 timeData[i].value = (i/50.0+1)*(rand()/(double)RAND_MAX-0.5);
             else
             {
-                qDebug()<<rand()%2;
-                //            timeData[i].value = qFabs(timeData[i-1].value)*(1+0.02/4.0*(4-gi)) + (i/50.0+1)*(rand()/(double)RAND_MAX-0.5);
-                timeData[i].value = rand()%2;
+                timeData[i].value = dataList.at(i);
             }
         }
         ui->customPlot->graph()->data()->set(timeData);
@@ -72,8 +81,8 @@ void MainWindow::plotGraph()
     ui->customPlot->xAxis2->setTickLabels(false);
     ui->customPlot->yAxis2->setTickLabels(false);
     // set axis ranges to show all data:
-    ui->customPlot->xAxis->setRange(now+24*3600*200, now+24*3600*249);
-    ui->customPlot->yAxis->setRange(-3, 2);
+    ui->customPlot->xAxis->setRange(now, now+24*3600*249);
+    ui->customPlot->yAxis->setRange(0, 1);
     // show legend with slightly transparent background brush:
     ui->customPlot->legend->setVisible(true);
     ui->customPlot->legend->setBrush(QColor(255, 255, 255, 150));
