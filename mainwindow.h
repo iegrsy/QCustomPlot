@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QGraphicsView>
 #include <QGraphicsScene>
+#include <QWheelEvent>
 #include <QtGui>
 
 
@@ -22,6 +23,8 @@ public:
     void plotGraph(QList<int> dataList);
 private:
     Ui::MainWindow *ui;
+protected:
+    bool eventFilter(QObject *obj, QEvent *ev);
 
 };
 
