@@ -7,9 +7,8 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     ui->customPlot->installEventFilter(this);
+    ui->frame_3->installEventFilter(this);
     setMouseTracking(true);
-
-
 
     QVector<QCPGraphData> randState;
     for (int var = 0; var < 250; ++var) {
@@ -24,6 +23,13 @@ MainWindow::MainWindow(QWidget *parent) :
     }
 
     plotGraphData(randState);
+
+
+
+    this->setContextMenuPolicy(Qt::CustomContextMenu);
+
+    connect(this, SIGNAL(customContextMenuRequested(const QPoint &)),
+            this, SLOT(ShowContextMenu(const QPoint &)));
 }
 
 MainWindow::~MainWindow()
@@ -54,6 +60,9 @@ void MainWindow::plotGraph()
 
     ui->customPlot->xAxis->setRange(0, 10);
     ui->customPlot->yAxis->setRange(0, 1);
+
+    ui->customPlot->legend->setVisible(true);
+    ui->customPlot->legend->setBrush(QColor(255, 255, 255, 150));
 }
 
 void MainWindow::plotGraphData(QVector<QCPGraphData> dataList)
@@ -63,10 +72,19 @@ void MainWindow::plotGraphData(QVector<QCPGraphData> dataList)
     ui->customPlot->addGraph();
     QColor color(150, 255, 150, 150);
     ui->customPlot->graph()->setLineStyle(QCPGraph::lsLine);
-    ui->customPlot->graph()->setPen(QPen(color.lighter(200)));
+    ui->customPlot->graph()->setPen(QPen(color.lighter(100)));
     ui->customPlot->graph()->setBrush(QBrush(color));
-
     ui->customPlot->graph()->data()->set(dataList);
+    ui->customPlot->graph()->setName("Data");
+
+    QSharedPointer<QCPAxisTicker> stateTicker(new QCPAxisTicker);
+    ui->customPlot->xAxis->setTicker(stateTicker);
+    ui->customPlot->yAxis->setTicker(stateTicker);
+
+    ui->customPlot->xAxis->setTickLabelFont(QFont(QFont().family(), 8));
+    ui->customPlot->yAxis->setTickLabelFont(QFont(QFont().family(), 8));
+    ui->customPlot->xAxis->setLabel("Value");
+    ui->customPlot->yAxis->setLabel("Count");
 
     min_xAxis = dataList.first().key;
     max_xAxis = dataList.last().key;
@@ -80,6 +98,9 @@ void MainWindow::plotGraphData(QVector<QCPGraphData> dataList)
     ui->customPlot->xAxis->setRange(lower_xAxis , upper_xAxis);
     ui->customPlot->yAxis->setRange(lower_yAxis , upper_yAxis);
 
+    ui->customPlot->legend->setVisible(true);
+    ui->customPlot->legend->setBrush(QColor(255, 255, 255, 150));
+    ui->customPlot->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignRight|Qt::AlignBottom);
 }
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
@@ -200,6 +221,17 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
             return false;
         }
     }
+    else if (obj == ui->frame_3)
+    {
+        //Capture mouse event
+        if((event->type() == QEvent::MouseButtonPress) && Qt::LeftButton)
+        {
+            QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
+
+            qDebug()<<"burası frame0";
+            return true;
+        }
+    }
     else
     {
         // pass the event on to the parent class
@@ -223,9 +255,32 @@ void MainWindow::displayRangeSetY(double range)
 
 
 
+void MainWindow::ShowContextMenu(const QPoint &pos)
+{
+   QMenu contextMenu(tr("Context menu"), this);
+
+   QAction action1("item1", this);
+   QAction action2("item2", this);
+
+   connect(&action1, SIGNAL(triggered()), this, SLOT(myContextMenuSlot1()));
+   connect(&action2, SIGNAL(triggered()), this, SLOT(myContextMenuSlot2()));
+
+   contextMenu.addAction(&action1);
+   contextMenu.addAction(&action2);
 
 
+   contextMenu.exec(mapToGlobal(pos));
+}
 
+void MainWindow::myContextMenuSlot1()
+{
+    qDebug()<<"slot1 trig";
+}
+
+void MainWindow::myContextMenuSlot2()
+{
+    qDebug()<<"slot2 trig";
+}
 
 
 

@@ -45,12 +45,17 @@ public:
     void displayRangeSet(double range);
     void displayRangeSetY(double range);
 
+public slots:
+    void ShowContextMenu(const QPoint &pos);
 private:
     Ui::MainWindow *ui;
 protected:
     bool eventFilter(QObject *obj, QEvent *ev);
 
 protected slots:
+private slots:
+    void myContextMenuSlot1();
+    void myContextMenuSlot2();
 };
 
 #endif // MAINWINDOW_H
