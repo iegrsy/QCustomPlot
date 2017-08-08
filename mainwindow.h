@@ -11,6 +11,7 @@
 #include <QWheelEvent>
 #include <QtGui>
 #include <qcustomplot.h>
+#include <QVector>
 
 
 namespace Ui {
@@ -28,13 +29,18 @@ public:
     void plotGraph();
     void plotGraphData(QVector<QCPGraphData> dataList);
 
-    //pan zoom veriables
-    double min_xAxis,max_xAxis,min_yAxis,max_yAxis;
-
-    //mouse point vector
-    QPoint startPoint,stopPoint;
+    //pan veriable
+    double displayRange = 100;
+    double displayRangeY = 10;
+    double mouseWheelStep = 3.0;
     bool mouseDown = false;
-    int difx;
+    bool ctrlKeyDown =  false;
+    QPoint lastPoint;
+    double difx;
+    double lower_xAxis,upper_xAxis,lower_yAxis,upper_yAxis;
+    double min_xAxis, max_xAxis;
+    void displayRangeSet(double range);
+    void displayRangeSetY(double range);
 
 private:
     Ui::MainWindow *ui;

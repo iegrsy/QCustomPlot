@@ -21,7 +21,7 @@ MainWindow::MainWindow(QWidget *parent) :
         }
     }
 
-    //    plotGraph();
+
     plotGraphData(randState);
 
 }
@@ -33,8 +33,6 @@ MainWindow::~MainWindow()
 
 void MainWindow::plotGraph()
 {
-    min_xAxis=0,max_xAxis=500,min_yAxis=0,max_yAxis=10;
-
     ui->customPlot->setLocale(QLocale(QLocale::Turkish, QLocale::Turkey));
 
     ui->customPlot->addGraph();
@@ -54,13 +52,13 @@ void MainWindow::plotGraph()
     ui->customPlot->xAxis2->setTickLabels(false);
     ui->customPlot->yAxis2->setTickLabels(false);
 
-    //    ui->customPlot->xAxis->setRange(0, 10);
-    //    ui->customPlot->yAxis->setRange(0, 1);
+    ui->customPlot->xAxis->setRange(0, 10);
+    ui->customPlot->yAxis->setRange(0, 1);
 }
 
 void MainWindow::plotGraphData(QVector<QCPGraphData> dataList)
 {
-    min_xAxis=0,max_xAxis=500,min_yAxis=0,max_yAxis=10;
+    ui->customPlot->setLocale(QLocale(QLocale::Turkish, QLocale::Turkey));
 
     ui->customPlot->addGraph();
     QColor color(150, 255, 150, 150);
@@ -69,33 +67,102 @@ void MainWindow::plotGraphData(QVector<QCPGraphData> dataList)
     ui->customPlot->graph()->setBrush(QBrush(color));
 
     ui->customPlot->graph()->data()->set(dataList);
+
+    min_xAxis = dataList.first().key;
+    max_xAxis = dataList.last().key;
+
+    lower_xAxis = min_xAxis;
+    upper_xAxis = lower_xAxis + displayRange;
+
+    lower_yAxis = 0.0;
+    upper_yAxis = displayRangeY;
+
+    ui->customPlot->xAxis->setRange(lower_xAxis , upper_xAxis);
+    ui->customPlot->yAxis->setRange(lower_yAxis , upper_yAxis);
+
 }
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 {
     if (obj == ui->customPlot)
     {
+        //Capture key event
         if (event->type() == QEvent::KeyPress)
         {
             QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
-            qDebug() << "Ate key press" << keyEvent->key();
+
+            if(keyEvent->key() == Qt::Key_Control)
+                ctrlKeyDown = true;
+
             return true;
         }
-        else if((event->type() == QEvent::MouseButtonPress) && Qt::LeftButton)
+        else if (event->type() == QEvent::KeyRelease)
+        {
+            QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
+
+            if(keyEvent->key() == Qt::Key_Control)
+                ctrlKeyDown = false;
+
+            return true;
+        }
+
+        if ( event->type() == QEvent::Wheel )
+        {
+            QWheelEvent *wheelEvent = static_cast<QWheelEvent*>(event);
+            int zoom = wheelEvent->delta();
+
+            if (zoom > 0)
+            {
+                if(ctrlKeyDown)
+                {
+                    displayRangeSetY(mouseWheelStep);
+                    ui->customPlot->yAxis->setRange(lower_yAxis, upper_yAxis );
+                    ui->customPlot->replot();
+                }
+                else
+                {
+                    displayRangeSet(mouseWheelStep);
+                    ui->customPlot->xAxis->setRange(lower_xAxis, upper_xAxis );
+                    ui->customPlot->replot();
+                }
+            }
+            else
+            {
+                if(ctrlKeyDown)
+                {
+                    displayRangeSetY(-mouseWheelStep);
+                    ui->customPlot->yAxis->setRange(lower_yAxis, upper_yAxis );
+                    ui->customPlot->replot();
+                }
+                else
+                {
+                    displayRangeSet(-mouseWheelStep);
+                    ui->customPlot->xAxis->setRange(lower_xAxis, upper_xAxis );
+                    ui->customPlot->replot();
+                }
+            }
+            return true;
+        }
+
+        //Capture mouse event
+        if((event->type() == QEvent::MouseButtonPress) && Qt::LeftButton)
         {
             QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
-            startPoint = QPoint(mouseEvent->x(),mouseEvent->y());
-            qDebug()<< "mouse start point: " << startPoint;
+
+            lastPoint = QPoint(mouseEvent->globalX(),mouseEvent->globalY());
             mouseDown = true;
+
             return true;
         }
         else if ( event->type() == QEvent::MouseButtonRelease)
         {
-            QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
-            stopPoint = QPoint(mouseEvent->x(),mouseEvent->y());
-            qDebug()<< "mouse release: " << stopPoint;
+            //QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
+
+            lower_xAxis = lower_xAxis + difx;
+            upper_xAxis = upper_xAxis + difx;
+
             mouseDown = false;
-            //            startPoint = Po;
+
             return true;
         }
         else if ( event->type() == QEvent::MouseMove )
@@ -103,35 +170,14 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
             if(mouseDown == true)
             {
                 QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
-                stopPoint = QPoint(mouseEvent->x(),mouseEvent->y());
-                difx = stopPoint.x()-startPoint.x();
-                ui->customPlot->xAxis->setRange(min_xAxis - difx, max_xAxis - difx);
+
+                difx = (lastPoint.x() - mouseEvent->globalX())/5;
+
+                ui->customPlot->xAxis->setRange(lower_xAxis + difx, upper_xAxis + difx);
                 ui->customPlot->replot();
+
+                return true;
             }
-        }
-        else if ( event->type() == QEvent::Wheel )
-        {
-            QWheelEvent *wheelEvent = static_cast<QWheelEvent*>(event);
-            int zoom = wheelEvent->delta();
-
-            if (zoom > 0){
-                if(max_yAxis/1.3 >1)
-                    max_yAxis = max_yAxis/1.3;
-
-                ui->customPlot->yAxis->setRange(min_yAxis, max_yAxis);
-                ui->customPlot->replot();
-            }
-            else
-            {
-                if(max_yAxis>1)
-                    max_yAxis = max_yAxis*1.3;
-
-                ui->customPlot->yAxis->setRange(min_yAxis, max_yAxis);
-                ui->customPlot->replot();
-            }
-
-            qDebug()<< "mouse wheel: " << zoom <<":"<<max_yAxis;
-            return true;
         }
         else
         {
@@ -145,4 +191,16 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
     }
 }
 
+void MainWindow::displayRangeSet(double range)
+{
+    displayRange += 2*range;
+    lower_xAxis -= range;
+    upper_xAxis = lower_xAxis + displayRange;
+}
 
+void MainWindow::displayRangeSetY(double range)
+{
+    displayRangeY += 2*range;
+    lower_yAxis -= range;
+    upper_yAxis = lower_xAxis + displayRange;
+}
