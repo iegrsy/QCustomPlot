@@ -1,11 +1,16 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+/* source link
+ * http://www.qcustomplot.com/index.php/demos/datedemo
+*/
+
 #include <QMainWindow>
 #include <QGraphicsView>
 #include <QGraphicsScene>
 #include <QWheelEvent>
 #include <QtGui>
+#include <qcustomplot.h>
 
 
 namespace Ui {
@@ -20,16 +25,16 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
-    void plotGraph(QList<int> dataList);
+    void plotGraph();
+    void plotGraphData(QVector<QCPGraphData> dataList);
 
     //pan zoom veriables
-    int min_xAxis=0,max_xAxis=500,min_yAxis=0;
-    double max_yAxis=10;
+    double min_xAxis,max_xAxis,min_yAxis,max_yAxis;
 
     //mouse point vector
     QPoint startPoint,stopPoint;
     bool mouseDown = false;
-    int difx = stopPoint.x()-startPoint.x();
+    int difx;
 
 private:
     Ui::MainWindow *ui;

@@ -9,19 +9,21 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->customPlot->installEventFilter(this);
     setMouseTracking(true);
 
-    QList<int> randState;
+    QVector<QCPGraphData> randState;
     for (int var = 0; var < 250; ++var) {
         if( (50 < var && var < 130) || (170 < var && var < 230) )
         {
-            randState.append(1);
+            randState.append(QCPGraphData(var,var*2));
         }
         else
         {
-            randState.append(0);
+            randState.append(QCPGraphData(var,0));
         }
     }
 
-    plotGraph(randState);
+    //    plotGraph();
+    plotGraphData(randState);
+
 }
 
 MainWindow::~MainWindow()
@@ -29,73 +31,22 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::plotGraph(QList<int> dataList)
+void MainWindow::plotGraph()
 {
+    min_xAxis=0,max_xAxis=500,min_yAxis=0,max_yAxis=10;
 
-    // set locale to english, so we get english month names:
-    ui->customPlot->setLocale(QLocale(QLocale::English, QLocale::UnitedKingdom));
+    ui->customPlot->setLocale(QLocale(QLocale::Turkish, QLocale::Turkey));
 
+    ui->customPlot->addGraph();
+    QColor color(255,150, 150, 150);
+    ui->customPlot->graph()->setLineStyle(QCPGraph::lsLine);
+    ui->customPlot->graph()->setPen(QPen(color.lighter(200)));
+    ui->customPlot->graph()->setBrush(QBrush(color));
 
-    // seconds of current time, we'll use it as starting point in time for data:
-    double now = QDateTime::currentDateTime().toTime_t();
-
-
-    srand(8); // set the random seed, so we always get the same random data
-    // create multiple graphs:
-    for (int gi=0; gi<1; ++gi)
-    {
-        ui->customPlot->addGraph();
-        QColor color(20+200/4.0*gi,70*(1.6-gi/4.0), 150, 150);
-        ui->customPlot->graph()->setLineStyle(QCPGraph::lsLine);
-        ui->customPlot->graph()->setPen(QPen(color.lighter(200)));
-        ui->customPlot->graph()->setBrush(QBrush(color));
-
-
-        // generate random walk data:
-        QVector<QCPGraphData> timeData(dataList.count());
-        for (int i=0; i<dataList.count(); ++i)
-        {
-            timeData[i].key = i;
-            if (i == 0)
-                timeData[i].value = 0;
-            else
-            {
-                timeData[i].value = dataList.at(i);
-            }
-        }
-        ui->customPlot->graph()->data()->set(timeData);
-    }
-
-
-    // configure bottom axis to show date instead of number:
-    //    QSharedPointer<QCPAxisTickerDateTime> dateTicker(new QCPAxisTickerDateTime);
-    //    dateTicker->setDateTimeFormat("hh:ss:mm\n dd/MM/yyyy");
-    //    ui->customPlot->xAxis->setTicker(dateTicker);
-
-
-    // configure left axis text labels:
     QSharedPointer<QCPAxisTicker> stateTicker(new QCPAxisTicker);
     ui->customPlot->xAxis->setTicker(stateTicker);
     ui->customPlot->yAxis->setTicker(stateTicker);
 
-    //    QSharedPointer<QCPAxisTickerText> textTicker(new QCPAxisTickerText);
-    //    textTicker->addTick(10, "a bit\nlow");
-    //    textTicker->addTick(25, "my\nticker");
-    //    textTicker->addTick(50, "quite\nhigh");
-    //    ui->customPlot->yAxis->setTicker(textTicker);
-
-
-    // set a more compact font size for bottom and left axis tick labels:
-    ui->customPlot->xAxis->setTickLabelFont(QFont(QFont().family(), 8));
-    ui->customPlot->yAxis->setTickLabelFont(QFont(QFont().family(), 8));
-
-
-    // set axis labels:
-    ui->customPlot->xAxis->setLabel("Date");
-    ui->customPlot->yAxis->setLabel("State");
-
-
-    // make top and right axes visible but without ticks and labels:
     ui->customPlot->xAxis2->setVisible(true);
     ui->customPlot->yAxis2->setVisible(true);
     ui->customPlot->xAxis2->setTicks(false);
@@ -103,15 +54,21 @@ void MainWindow::plotGraph(QList<int> dataList)
     ui->customPlot->xAxis2->setTickLabels(false);
     ui->customPlot->yAxis2->setTickLabels(false);
 
+    //    ui->customPlot->xAxis->setRange(0, 10);
+    //    ui->customPlot->yAxis->setRange(0, 1);
+}
 
-    // set axis ranges to show all data:
-    ui->customPlot->xAxis->setRange(min_xAxis, max_xAxis);
-    ui->customPlot->yAxis->setRange(min_yAxis, max_yAxis);
+void MainWindow::plotGraphData(QVector<QCPGraphData> dataList)
+{
+    min_xAxis=0,max_xAxis=500,min_yAxis=0,max_yAxis=10;
 
+    ui->customPlot->addGraph();
+    QColor color(150, 255, 150, 150);
+    ui->customPlot->graph()->setLineStyle(QCPGraph::lsLine);
+    ui->customPlot->graph()->setPen(QPen(color.lighter(200)));
+    ui->customPlot->graph()->setBrush(QBrush(color));
 
-    // show legend with slightly transparent background brush:
-    ui->customPlot->legend->setVisible(true);
-    ui->customPlot->legend->setBrush(QColor(255, 255, 255, 150));
+    ui->customPlot->graph()->data()->set(dataList);
 }
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
@@ -138,6 +95,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
             stopPoint = QPoint(mouseEvent->x(),mouseEvent->y());
             qDebug()<< "mouse release: " << stopPoint;
             mouseDown = false;
+            //            startPoint = Po;
             return true;
         }
         else if ( event->type() == QEvent::MouseMove )
@@ -186,3 +144,5 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
         return QMainWindow::eventFilter(obj, event);
     }
 }
+
+
