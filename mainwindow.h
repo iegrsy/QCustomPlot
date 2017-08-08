@@ -12,6 +12,8 @@
 #include <QtGui>
 #include <qcustomplot.h>
 #include <QVector>
+#include <QMouseEvent>
+#include <QPointF>
 
 
 namespace Ui {
@@ -37,6 +39,7 @@ public:
     bool ctrlKeyDown =  false;
     QPoint lastPoint;
     double difx;
+    double dify;
     double lower_xAxis,upper_xAxis,lower_yAxis,upper_yAxis;
     double min_xAxis, max_xAxis;
     void displayRangeSet(double range);
@@ -47,6 +50,7 @@ private:
 protected:
     bool eventFilter(QObject *obj, QEvent *ev);
 
+protected slots:
 };
 
 #endif // MAINWINDOW_H

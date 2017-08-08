@@ -9,6 +9,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->customPlot->installEventFilter(this);
     setMouseTracking(true);
 
+
+
     QVector<QCPGraphData> randState;
     for (int var = 0; var < 250; ++var) {
         if( (50 < var && var < 130) || (170 < var && var < 230) )
@@ -21,9 +23,7 @@ MainWindow::MainWindow(QWidget *parent) :
         }
     }
 
-
     plotGraphData(randState);
-
 }
 
 MainWindow::~MainWindow()
@@ -106,6 +106,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
             return true;
         }
 
+        //Capture wheel event
         if ( event->type() == QEvent::Wheel )
         {
             QWheelEvent *wheelEvent = static_cast<QWheelEvent*>(event);
@@ -161,6 +162,9 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
             lower_xAxis = lower_xAxis + difx;
             upper_xAxis = upper_xAxis + difx;
 
+            lower_yAxis = lower_yAxis + dify;
+            upper_yAxis = upper_yAxis + dify;
+
             mouseDown = false;
 
             return true;
@@ -172,12 +176,24 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
                 QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
 
                 difx = (lastPoint.x() - mouseEvent->globalX())/5;
+                dify = (lastPoint.y() - mouseEvent->globalY());
 
                 ui->customPlot->xAxis->setRange(lower_xAxis + difx, upper_xAxis + difx);
+                ui->customPlot->yAxis->setRange(lower_yAxis + dify, upper_yAxis + dify);
                 ui->customPlot->replot();
 
                 return true;
             }
+        }
+        else if ( event->type() == QEvent::MouseButtonDblClick)
+        {
+            qDebug()<<"laaaaan";
+            return true;
+        }
+        else if (event->type() == QEvent::MouseButtonPress && Qt::RightButton)
+        {
+            qDebug()<<"hadi ama";
+            return true;
         }
         else
         {
@@ -204,3 +220,16 @@ void MainWindow::displayRangeSetY(double range)
     lower_yAxis -= range;
     upper_yAxis = lower_xAxis + displayRange;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
