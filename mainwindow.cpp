@@ -8,7 +8,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     ui->customPlot->installEventFilter(this);
     ui->frame_3->installEventFilter(this);
-    setMouseTracking(true);
+
+    this->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(this, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(ShowContextMenu(const QPoint &)));
 
     QVector<QCPGraphData> randState;
     for (int var = 0; var < 250; ++var) {
@@ -25,11 +27,7 @@ MainWindow::MainWindow(QWidget *parent) :
     plotGraphData(randState);
 
 
-
-    this->setContextMenuPolicy(Qt::CustomContextMenu);
-
-    connect(this, SIGNAL(customContextMenuRequested(const QPoint &)),
-            this, SLOT(ShowContextMenu(const QPoint &)));
+    setMouseTracking(true);
 }
 
 MainWindow::~MainWindow()
@@ -253,8 +251,6 @@ void MainWindow::displayRangeSetY(double range)
     upper_yAxis = lower_xAxis + displayRange;
 }
 
-
-
 void MainWindow::ShowContextMenu(const QPoint &pos)
 {
    QMenu contextMenu(tr("Context menu"), this);
@@ -267,7 +263,6 @@ void MainWindow::ShowContextMenu(const QPoint &pos)
 
    contextMenu.addAction(&action1);
    contextMenu.addAction(&action2);
-
 
    contextMenu.exec(mapToGlobal(pos));
 }
