@@ -21,6 +21,16 @@ public:
     ~MainWindow();
 
     void plotGraph(QList<int> dataList);
+
+    //pan zoom veriables
+    int min_xAxis=0,max_xAxis=500,min_yAxis=0;
+    double max_yAxis=10;
+
+    //mouse point vector
+    QPoint startPoint,stopPoint;
+    bool mouseDown = false;
+    int difx = stopPoint.x()-startPoint.x();
+
 private:
     Ui::MainWindow *ui;
 protected:

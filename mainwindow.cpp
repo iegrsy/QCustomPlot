@@ -55,9 +55,9 @@ void MainWindow::plotGraph(QList<int> dataList)
         QVector<QCPGraphData> timeData(dataList.count());
         for (int i=0; i<dataList.count(); ++i)
         {
-            timeData[i].key = now + 24*i;
+            timeData[i].key = i;
             if (i == 0)
-                timeData[i].value = (i/50.0+1)*(rand()/(double)RAND_MAX-0.5);
+                timeData[i].value = 0;
             else
             {
                 timeData[i].value = dataList.at(i);
@@ -68,13 +68,14 @@ void MainWindow::plotGraph(QList<int> dataList)
 
 
     // configure bottom axis to show date instead of number:
-    QSharedPointer<QCPAxisTickerDateTime> dateTicker(new QCPAxisTickerDateTime);
-    dateTicker->setDateTimeFormat("hh:ss:mm\n dd/MM/yyyy");
-    ui->customPlot->xAxis->setTicker(dateTicker);
+    //    QSharedPointer<QCPAxisTickerDateTime> dateTicker(new QCPAxisTickerDateTime);
+    //    dateTicker->setDateTimeFormat("hh:ss:mm\n dd/MM/yyyy");
+    //    ui->customPlot->xAxis->setTicker(dateTicker);
 
 
     // configure left axis text labels:
     QSharedPointer<QCPAxisTicker> stateTicker(new QCPAxisTicker);
+    ui->customPlot->xAxis->setTicker(stateTicker);
     ui->customPlot->yAxis->setTicker(stateTicker);
 
     //    QSharedPointer<QCPAxisTickerText> textTicker(new QCPAxisTickerText);
@@ -104,8 +105,8 @@ void MainWindow::plotGraph(QList<int> dataList)
 
 
     // set axis ranges to show all data:
-    ui->customPlot->xAxis->setRange(now, now+24*dataList.count());
-    ui->customPlot->yAxis->setRange(0, 1);
+    ui->customPlot->xAxis->setRange(min_xAxis, max_xAxis);
+    ui->customPlot->yAxis->setRange(min_yAxis, max_yAxis);
 
 
     // show legend with slightly transparent background brush:
@@ -123,20 +124,56 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
             qDebug() << "Ate key press" << keyEvent->key();
             return true;
         }
-        else if(event->type() == QEvent::MouseButtonPress && Qt::LeftButton)
+        else if((event->type() == QEvent::MouseButtonPress) && Qt::LeftButton)
         {
             QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
-            qDebug()<< "mouse click: " << mouseEvent->globalPos();
+            startPoint = QPoint(mouseEvent->x(),mouseEvent->y());
+            qDebug()<< "mouse start point: " << startPoint;
+            mouseDown = true;
+            return true;
         }
-        else if ( event->type() == QEvent::MouseButtonRelease )
+        else if ( event->type() == QEvent::MouseButtonRelease)
         {
             QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
-            qDebug()<< "mouse release: " << mouseEvent->globalPos();
+            stopPoint = QPoint(mouseEvent->x(),mouseEvent->y());
+            qDebug()<< "mouse release: " << stopPoint;
+            mouseDown = false;
+            return true;
+        }
+        else if ( event->type() == QEvent::MouseMove )
+        {
+            if(mouseDown == true)
+            {
+                QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
+                stopPoint = QPoint(mouseEvent->x(),mouseEvent->y());
+                difx = stopPoint.x()-startPoint.x();
+                ui->customPlot->xAxis->setRange(min_xAxis - difx, max_xAxis - difx);
+                ui->customPlot->replot();
+            }
         }
         else if ( event->type() == QEvent::Wheel )
         {
             QWheelEvent *wheelEvent = static_cast<QWheelEvent*>(event);
-            qDebug()<< "mouse wheel: " << wheelEvent->delta();
+            int zoom = wheelEvent->delta();
+
+            if (zoom > 0){
+                if(max_yAxis/1.3 >1)
+                    max_yAxis = max_yAxis/1.3;
+
+                ui->customPlot->yAxis->setRange(min_yAxis, max_yAxis);
+                ui->customPlot->replot();
+            }
+            else
+            {
+                if(max_yAxis>1)
+                    max_yAxis = max_yAxis*1.3;
+
+                ui->customPlot->yAxis->setRange(min_yAxis, max_yAxis);
+                ui->customPlot->replot();
+            }
+
+            qDebug()<< "mouse wheel: " << zoom <<":"<<max_yAxis;
+            return true;
         }
         else
         {
