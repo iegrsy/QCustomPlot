@@ -30,28 +30,33 @@ public:
 
     void plotGraph();
     void plotGraphData(QVector<QCPGraphData> dataList);
-
-    //pan veriable
-
-    bool mouseDown = false;
-    bool ctrlKeyDown =  false;
-
-
-    QCPItemText *textItem;
     QVector<QCPGraphData> randomDataCreate();
 
-    void mouseClickData(QMouseEvent *event, QObject *obj);
+    //pan veriable
+    bool mouseDown = false;
+    bool ctrlKeyDown =  false;
+    QCPItemText *textItem;
+
 public slots:
+
+
 private:
     Ui::MainWindow *ui;
+
+    void mouseClickData(QMouseEvent *event, QObject *obj);
+    void onMouseMove(QMouseEvent *event);
+
 protected:
     bool eventFilter(QObject *obj, QEvent *ev);
+
+
 protected slots:
+
+
 private slots:
     void ShowContextMenu(const QPoint &pos);
     void myContextMenuSlot1();
     void myContextMenuSlot2();
-    void onMouseMove(QMouseEvent *event);
 };
 
 #endif // MAINWINDOW_H

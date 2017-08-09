@@ -148,34 +148,29 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
             {
                 mouseDown = true;
                 mouseClickData(mouseEvent, obj);
+                return false;
             }
             else if (mouseEvent->button() == Qt::RightButton)
             {
                 ShowContextMenu(mouseEvent->globalPos());
+                return false;
             }
 
-
+            return false;
+        }
+        else if ( event->type() == QEvent::MouseButtonRelease)
+        {
+            mouseDown = false;
             return false;
         }
         else if ( event->type() == QEvent::MouseButtonDblClick)
         {
-            qDebug()<<"laaaaan";
-            return false;
+            qDebug()<<"mouse double click";
+            return true;
         }
         else
         {
             return false;
-        }
-    }
-    else if (obj == ui->frame_3)
-    {
-        //Capture mouse event
-        if((event->type() == QEvent::MouseButtonPress) && Qt::LeftButton)
-        {
-            QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
-
-            qDebug()<<mouseEvent;
-            return true;
         }
     }
     else
@@ -203,29 +198,32 @@ void MainWindow::ShowContextMenu(const QPoint &pos)
 
 void MainWindow::myContextMenuSlot1()
 {
-    qDebug()<<"slot1 trig";
+    qDebug()<<"slot 1 trigger";
 }
 
 void MainWindow::myContextMenuSlot2()
 {
-    qDebug()<<"slot2 trig";
+    qDebug()<<"slot 2 trigger";
 }
 
 void MainWindow::onMouseMove(QMouseEvent *event)
 {
     QCustomPlot* customPlot = qobject_cast<QCustomPlot*>(sender());
+
     double x = customPlot->xAxis->pixelToCoord(event->pos().x());
     double y = customPlot->yAxis->pixelToCoord(event->pos().y());
+
     textItem->setText(QString("(%1, %2)\n").arg((int)x).arg((int)y));
     textItem->position->setCoords(QPointF(x, (y)));
     textItem->setFont(QFont(font().family(), 10));
+
     customPlot->replot();
 }
 
 QVector<QCPGraphData> MainWindow::randomDataCreate(){
     QVector<QCPGraphData> randState;
     for (int var = 0; var < 10000; ++var) {
-        if( (50 < var && var < 130) || (170 < var && var < 230) )
+        if( (50 < var && var < 130) || (170 < var && var < 230) || (500 < var && var < 3000) || (4000 < var && var < 6000) )
         {
             randState.append(QCPGraphData(var,50 + rand()%5));
         }
